@@ -1,0 +1,77 @@
+#Send_Mail Code
+
+Sub SendTextMail_Click()
+    Dim strFirstName As String, strLastName As String
+    Dim strTo As String, strCC As String, strBCC As String
+    Dim strSubject As String, strGreeting As String, strBody As String, strAttachment As String
+    
+    Dim row As Integer
+    
+    ' Select the row range from row no. 6 to row no. 56 for sending emails
+    For r = 6 To 56
+        
+        ' Get the values from cells for setting First Name, Last Name, To, CC, BCC, Subject, Greeting, Body and Attachment
+        strFirstName = Cells(r, 1)
+        strLastName = Cells(r, 2)
+        strTo = Cells(r, 3)
+        strCC = Cells(r, 4)
+        strBCC = Cells(r, 5)
+        strSubject = Cells(r, 6)
+        strGreeting = Cells(r, 7)
+        If (strGreeting <> "") Then
+            strBody = strGreeting
+            If (strFirstName <> "") Then
+                strBody = strBody & " " & strFirstName & "," & vbCrLf & vbCrLf
+                If (Cells(r, 8) <> "") Then
+                    strBody = strBody & Cells(r, 8)
+                End If
+            End If
+        End If
+        strAttachment = Cells(r, 10)
+        
+        ' Check if mandatory feilds  are available
+        If ((strTo <> "" Or strCC <> "" Or strBCC <> "") And strSubject <> "" And strBody <> "") Then
+            'Send mail for the values mentioned in the row
+            Call Send_Mail(strTo, strCC, strBCC, strSubject, strBody, strAttachment)
+            Application.Wait (Now + TimeValue("0:00:01"))
+            Application.SendKeys "%s"
+            
+            strBody = ""
+'        Else
+'            MsgBox ("Please ensure TO, Subject and Body columns are updated correctly.")
+        End If
+        
+    Next r
+
+End Sub
+
+
+Sub Send_Mail(strTo As String, strCC As String, strBCC As String, _
+                strSubject As String, strBody As String, strAttachment As String)
+
+    Dim objApplication As Object
+    Dim objMail As Object
+
+    ' Create Outlook application object
+    Set objApplication = CreateObject("Outlook.Application")
+    'Logon to the outlook session
+    objApplication.Session.Logon
+    ' Create simple mail item
+    Set objMail = objApplication.CreateItem(0)
+
+    'Set properties of mail
+    On Error Resume Next
+    With objMail
+        .To = strTo
+        .CC = strCC
+        .BCC = strBCC
+        .Subject = strSubject
+        .Body = strBody
+        .Attachments.Add (strAttachment)
+        .Send
+    End With
+    On Error GoTo 0
+
+    Set objMail = Nothing
+    Set objApplication = Nothing
+End Sub
